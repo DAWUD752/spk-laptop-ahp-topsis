@@ -17,22 +17,46 @@ st.write("Metode AHP dan TOPSIS")
 # ==========================
 df = pd.read_csv("laptop.csv")
 
+# Hapus spasi yang tersembunyi pada header
+df.columns = df.columns.str.strip()
+
+# Samakan nama kolom CPU
+if "CPU_Spee" in df.columns:
+    df.rename(columns={"CPU_Spee": "CPU_Speed"}, inplace=True)
+
 st.subheader("📊 Dataset Laptop (Asli)")
 st.dataframe(df)
 
 # ==========================
-# PREPROCESS STORAGE
+# PREPROCESSING
 # ==========================
-def convert_storage(value):
-    value = value.upper()
-    if "TB" in value:
-        return int(value.replace("TB", "").strip()) * 1024
-    elif "GB" in value:
-        return int(value.replace("GB", "").strip())
-    else:
-        return 0
+
+# --- Storage (ubah GB/TB ke angka GB) ---
+def convert_storage(v):
+    v = str(v).upper()
+
+    # Ambil angka saja (misal: "512GB SSD" -> "512")
+    num = ""
+    for ch in v:
+        if ch.isdigit() or ch == "." or ch == ",":
+            num += ch
+
+    num = num.replace(",", ".")  # antisipasi koma
+    num = float(num) if num else 0
+
+    if "TB" in v:
+        return num * 1024
+    return num
 
 df["Storage"] = df["Storage"].apply(convert_storage)
+
+# --- angka yang pakai koma jadi float ---
+for col in ["Price", "Weight"]:
+    df[col] = df[col].astype(str).str.replace(",", ".").astype(float)
+
+# Pastikan numerik
+df["RAM"] = df["RAM"].astype(float)
+df["CPU_Speed"] = df["CPU_Speed"].astype(float)
 
 st.subheader("📐 Dataset Setelah Preprocessing")
 st.dataframe(df)
@@ -89,6 +113,4 @@ df_rank = df.sort_values("Nilai Preferensi", ascending=False)
 st.dataframe(df_rank)
 
 st.subheader("📈 Grafik Ranking Laptop")
-st.bar_chart(
-    df_rank.set_index("Brand")["Nilai Preferensi"]
-)
+st.bar_chart(df_rank.set_index("Brand")["Nilai Preferensi"])
