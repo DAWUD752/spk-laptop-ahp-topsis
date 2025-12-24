@@ -15,7 +15,9 @@ st.write("Metode AHP dan TOPSIS")
 # ==========================
 # LOAD DATA
 # ==========================
-df = pd.read_csv("laptop.csv")
+df = pd.read_csv("laptop.csv", sep=";", decimal=",")
+df.columns = df.columns.str.strip()
+
 
 # Hapus spasi yang tersembunyi pada header
 df.columns = df.columns.str.strip()
